@@ -1,0 +1,347 @@
+/******************************** REXX ****************************************/
+/* CAWAVSMN - FM VSCODE Rexx .                                                */
+/* Perform an action, specified as parameter, using Rexx Exec                 */
+/* ===========================================================================*/
+/* Setup: FMPLOADLIB = Provide the File Master Plus Load Library              */
+/*                                                                            */
+FMPLOADLIB = 'CAI.CDBILOAD'
+/*                                                                            */
+/* ===========================================================================*/
+/*   COPYRIGHT (C) 2019 CA.  ALL RIGHTS RESERVED.                             */
+/* ===========================================================================*/
+/* Input : - ACTION  = Action needs to be performed                           */
+/*         - PARM%  = Input parameters                                        */
+/*                                                                            */
+/* - supported Input ACTION:                                                  */
+/*      GX01 - GENXML Request version 01                                      */
+/* ===========================================================================*/
+PARSE UPPER ARG ACTION PARM1 PARM2 PARM3 PARM4 PARM5
+ACTION  = STRIP(ACTION,B,' ')
+PARM1   = STRIP(PARM1,B,' ')
+PARM2   = STRIP(PARM2,B,' ')
+PARM3   = STRIP(PARM3,B,' ')
+PARM4   = STRIP(PARM4,B,' ')
+PARM5   = STRIP(PARM5,B,' ')
+
+/*----------------------------------------------------------------------------*/
+/* Initialize the global variables.                                           */
+/*----------------------------------------------------------------------------*/
+X = MSG(OFF)
+RC_MSG = ''
+RC_AL1 = '' ; RC_AL2 = '' ; RC_AL3 = '' ; RC_AL4 = '' ; RC_AL5 = ''
+
+/*----------------------------------------------------------------------------*/
+/* Validate and Perform requested action                                      */
+/*----------------------------------------------------------------------------*/
+ACTIONRQ = SUBSTR(ACTION,1,2)
+SELECT
+   WHEN ACTIONRQ = 'GX' THEN CALL GENXML_PROC
+   OTHERWISE DO
+     RC_MSG = '12/error, requested action "'ACTIONRQ'" is not supported.'
+     RC_MSG = RC_MSG||' Check/Update corresponding Rexx version.'
+     SIGNAL EXIT
+   END
+END
+
+/*----------------------------------------------------------------------------*/
+/* Exit the procedure.                                                        */
+/*----------------------------------------------------------------------------*/
+EXIT:
+RC_RS = SUBSTR(RC_MSG,1,2)
+IF RC_RS <> ''
+THEN SAY '*** CAWA0000E - 'SUBSTR(RC_MSG,4)
+
+RETURN
+
+GENXML_PROC:
+/* ===========================================================================*/
+/* Input  : PARM1  = Input file to create XML from                            */
+/*          PARM2  = layout file ** must be a library **                      */
+/*          PARM3  = Selection criteria  ** must be a library **              */
+/*                    '*' means no selection criteria                         */
+/*          PARM4  = Maximum number of records to be written                  */
+/*                    '0' means read all the records                          */
+/*          PARM5    = Skip the number of records                             */
+/*                    '0' means no skip                                       */
+/*                                                                            */
+/* Output : XML of the INFILE based on LAYOUT                                 */
+/*                                                                            */
+/* Notes.                                                                     */
+/* - The RC_MSG variable value starts with a 2-chars return code value:       */
+/*   00(no errors), 04(warning), 12(error)                                    */
+/* ===========================================================================*/
+INFILE  = PARM1
+LAYOUT  = PARM2
+SELCRI  = PARM3
+OUTLIM  = PARM4
+SKIP    = PARM5
+
+ACTIONVR = SUBSTR(ACTION,3,2)
+IF ACTIONVR > 01
+THEN DO
+   RC_MSG = '12/error, requested GENXML version "'ACTIONVR'" is not supported.'
+   RC_MSG = RC_MSG||' Check/Update corresponding Rexx version.'
+   SIGNAL PROC_EXIT
+END
+
+/*----------------------------------------------------------------------------*/
+/* Check INFILE, LAYOUT, SELCRI                                               */
+/*----------------------------------------------------------------------------*/
+RC_GEN = LISTDSI("'"INFILE"'")
+IF RC_GEN > 4
+THEN DO
+   RC_MSG = '12/"'INFILE'" dataset does not exist.'
+   SIGNAL PROC_EXIT
+END
+
+IF SYSDSORG = 'VS'
+THEN DO
+   X = OUTTRAP('listdsiin.')
+   "LISTCAT ENTRIES('"INFILE"') ALL"
+   RC_GEN = RC
+   X = OUTTRAP('OFF')
+   IF RC_GEN <> 0
+   THEN DO
+      RC_MSG = '08/LISTCAT error 'RC_GEN' for dataset "'INFILE'".'
+      RETURN
+   END
+   IMAX = listdsiin.0
+
+   /* Check the VSAM dataset is well the CLUSTER, not a DATA or INDEX file */
+   I = 1
+   IF SUBSTR(listdsiin.I,1,8) = 'CLUSTER '
+   THEN NOP
+   ELSE DO
+   IF (SUBSTR(listdsiin.I,1,5) = 'DATA ') | (SUBSTR(listdsiin.I,1,6) = 'INDEX ')
+   THEN DO
+    I = 2
+    DO WHILE I <= IMAX
+     IF SUBSTR(listdsiin.I,6,12) = 'ASSOCIATIONS'
+      THEN DO
+        I = I + 1
+        IF SUBSTR(listdsiin.I,8,9) = 'CLUSTER--'
+        THEN DO
+          INFILE = STRIP(SUBSTR(listdsiin.I,17),B,' ')
+          LEAVE
+        END
+      END
+    I = I + 1
+    END
+   END
+   END
+
+END
+
+X = OUTTRAP('MemList.')
+LISTDS "'"LAYOUT"'"
+X = OUTTRAP('OFF')
+RC_GEN = RC
+IF RC_GEN <> 0
+THEN DO
+   RC_MSG = '12/"'LAYOUT'" layout does not exist.'
+   SIGNAL PROC_EXIT
+END
+
+IF (SELCRI = "*") THEN NOP
+ELSE DO
+  X = OUTTRAP('MemList.')
+  LISTDS "'"SELCRI"'"
+  X = OUTTRAP('OFF')
+  RC_GEN = RC
+  IF RC_GEN <> 0
+  THEN DO
+     RC_MSG = '12/"'SELCRI'" selection criteria data set does not exist.'
+     SIGNAL PROC_EXIT
+  END
+END
+
+/*----------------------------------------------------------------------------*/
+/* Find the version of File Master in loadlib                                 */
+/*----------------------------------------------------------------------------*/
+RC_GEN = LISTDSI("'"FMPLOADLIB"'")
+IF RC_GEN > 4
+THEN DO
+   RC_MSG = '12/"'FMPLOADLIB'" load library does not exist.'
+   SIGNAL PROC_EXIT
+END
+
+"ALLOC FI(SRCHIN) DA('"FMPLOADLIB"(CAWALCHK)') SHR REUSE"
+RC_GEN = RC
+IF RC_GEN <> 0
+THEN DO
+   RC_MSG = '12/ALLOC error' RC_GEN '.'
+   RC_MSG = RC_MSG||' Incorrect FMP load library "'FMPLOADLIB'" specified.'
+   SIGNAL PROC_EXIT
+END
+
+"EXECIO * DISKR SRCHIN (FINIS STEM in."
+RC_GEN = RC
+IF RC_GEN <> 0
+THEN DO
+   "FREE F(SRCHIN)"
+   RC_MSG = '12/error' RC_GEN'.'
+   RC_MSG = RC_MSG||' Incorrect FMP load library "'FMPLOADLIB'" specified.'
+   SIGNAL PROC_EXIT
+END
+"FREE F(SRCHIN)"
+
+IF (POS('R10.0',in.1) > 0)
+THEN FM_VER = 'V10'
+ELSE IF (POS('R11.0',in.1) > 0)
+THEN FM_VER = 'V11'
+ELSE IF (POS('R12.0',in.1) > 0)
+THEN FM_VER = 'V12'
+
+/*----------------------------------------------------------------------------*/
+/* ALLOCATE the SYSUT1, LAYOUTIN, SYSIN, SYSUT1A AND SYSPRINT                 */
+/*----------------------------------------------------------------------------*/
+"ALLOC FI(SYSUT1) DA('"INFILE"') SHR REUSE"
+RC_AL1 = RC
+IF RC_AL1 <> 0
+THEN DO
+   RC_MSG = '12/ALLOC error' RC_AL1 'for INFILE dataset "'INFILE'"'
+   SIGNAL PROC_EXIT
+END
+
+"ALLOC FI(LAYOUTIN) DA('"LAYOUT"') SHR REUSE"
+RC_AL2 = RC
+IF RC_AL2 <> 0
+THEN DO
+   RC_MSG = '12/ALLOC error' RC_AL2 'for LAYOUT dataset "'LAYOUT'"'
+   SIGNAL PROC_EXIT
+END
+
+
+"ALLOC FI(SYSIN) UNIT(SYSALLDA) TRACKS SPACE(1 1) REUSE"
+RC_AL3 = RC
+IF RC_AL3 <> 0
+THEN DO
+   RC_MSG = '12/ALLOC error' RC_AL3 'for SYSIN'
+   SIGNAL PROC_EXIT
+END
+
+/* FORM THE SYSIN PARAMETERS                                                  */
+
+IF (SELCRI = "*") THEN NOP
+ELSE DO
+ "ALLOC FI(SELCRIFI) DA('"SELCRI"') SHR REUSE"
+ RC_SEL = RC
+ IF RC_SEL <> 0
+ THEN DO
+    RC_MSG = '12/ALLOC error' RC_SEL 'for SELCRIFI dataset "'SELCRI'"'
+    SIGNAL PROC_EXIT
+ END
+
+ RC_SEL = ''
+ "EXECIO * DISKR SELCRIFI (FINIS STEM selin."
+ RC_SEL = RC
+ IF RC_SEL <> 0
+ THEN DO
+    "FREE F(SELCRIFI)"
+    RC_MSG = '12/error' RC_SEL'. Unable to open the selection criteria dataset'
+    SIGNAL PROC_EXIT
+ END
+ "FREE F(SELCRIFI)"
+ I = 1
+ J = 1
+ DO WHILE I <= selin.0
+   selline = STRIP(selin.i)
+   IF ((SUBSTR(selline,1,1) = "*") | (LENGTH(selline) = 0) |,
+       (SUBSTR(selline,1,1) = '"') | (SUBSTR(selline,1,1) = "'"))
+   THEN NOP
+   ELSE DO
+      sysinsel.J = selline
+      J = J + 1
+   END
+   I = I + 1
+ END
+ sysinsel.0 = J - 1
+END
+
+SYSOUTLIM = "OUTLIM("||OUTLIM||"),"
+
+IF FM_VER = 'V10'
+THEN DO
+  SYSIN.1 ="  GENXML,"
+  SYSIN.2 ="   INFILE(SYSUT1),"
+  SYSIN.3 ="   OUTFILE(SYSUT1A),"
+  SYSIN.4 ="   LAYOUTFILE(LAYOUTIN),"
+  SYSIN.5 ="   "||SYSOUTLIM
+  MAXSYSINLN = 5
+END
+ELSE DO
+  SYSIN.1 ="  GENXML,"
+  SYSIN.2 ="   INFILE(SYSUT1),"
+  SYSIN.3 ="   OUTFILE(SYSUT1A),"
+  SYSIN.4 ="   LAYOUTFILE(LAYOUTIN),"
+  SYSIN.5 ="   OCCURS(BYNAME),"
+  SYSIN.6 ="   "||SYSOUTLIM
+  MAXSYSINLN = 6
+END
+
+I = 1
+DO WHILE I <= sysinsel.0
+    SL = MAXSYSINLN + I
+    IF (I = sysinsel.0) THEN SYSIN.SL = sysinsel.I||","
+    ELSE SYSIN.SL = sysinsel.I
+    I = I + 1
+END
+LN = MAXSYSINLN + I
+SYSIN.LN="   SKIP("||SKIP||")"
+"EXECIO * DISKW SYSIN (STEM SYSIN. OPEN FINIS)"
+
+"ALLOC FI(SYSUT1A) NEW REUSE LRECL(32000) BLKSIZE(32004) RECFM(V,B)",
+"CYLINDERS SPACE(10 100)"
+
+RC_AL4 = RC
+IF RC_AL4 <> 0
+THEN DO
+   RC_MSG = '12/ALLOC error' RC_AL4 'for SYSUT1A'
+   SIGNAL PROC_EXIT
+END
+
+"ALLOC FI(SYSPRINT) UNIT(SYSALLDA) TRACKS SPACE(1 1) REUSE"
+RC_AL5 = RC
+IF RC_AL5 <> 0
+THEN DO
+   RC_MSG = '12/ALLOC error' RC_AL5 'for SYSPRINT'
+   SIGNAL PROC_EXIT
+END
+
+/*----------------------------------------------------------------------------*/
+/* Generate the XML using FMMVS GENXML utility.                               */
+/*----------------------------------------------------------------------------*/
+"CALL '"FMPLOADLIB"(CAWABATC)'"
+RC1 = RC
+IF RC1 <> 0
+THEN DO
+   I = 1
+   "EXECIO * DISKR SYSPRINT (STEM SYSPRT. OPEN FINIS)"
+   DO WHILE I <= SYSPRT.0
+     SAY SYSPRT.I
+     I = I + 1
+   END
+   SIGNAL PROC_EXIT
+END
+ELSE DO
+   I = 1
+   "EXECIO * DISKR SYSUT1A (STEM SYSPRT. OPEN FINIS)"
+   IF SYSPRT.0 = 0
+   THEN "EXECIO * DISKR SYSPRINT (STEM SYSPRT. OPEN FINIS)"
+   DO WHILE I <= SYSPRT.0
+     SAY SYSPRT.I
+     I = I + 1
+   END
+END
+
+/*----------------------------------------------------------------------------*/
+/* PROC Exit the procedure.                                                   */
+/*----------------------------------------------------------------------------*/
+PROC_EXIT:
+IF RC_AL1 <> '' THEN "FREE FI(SYSUT1)"
+IF RC_AL2 <> '' THEN "FREE FI(LAYOUTIN)"
+IF RC_AL3 <> '' THEN "FREE FI(SYSIN)"
+IF RC_AL4 <> '' THEN "FREE FI(SYSUT1A)"
+IF RC_AL5 <> '' THEN "FREE FI(SYSPRINT)"
+
+RETURN
