@@ -54,7 +54,7 @@ Before you start using the extension, check your configuration settings.
         **Default:** 100 
     - **Rexx Lib**
 
-        Specifies the name of the data set that contains the CAWAVSMN member, as described in [**Configure CAWAVSMN REXX member**](#configure-CAWAVSMN-REXX-member).    
+        Specifies the name of the data set that contains the CAWAVSMN member, as described in [**Configure CAWAVSMN REXX member**](#configure-cawavsmn-rexx-member).    
   
     - **SSH Port Number**
 
