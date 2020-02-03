@@ -4,8 +4,8 @@ Data Set Viewer enables you to view data sets, including VSAM data sets, in CSV 
 
 ## Use Cases
 - Within an organization, users and administrators can retrieve VSAM data set content for manual post-processing in a spreadsheet of their choice.
-- As a developer, you can verify COBOL program output written into a physical sequential data set
-- As a tester, you can create test data from production VSAM data sets (see [**Limitations**](#limitations) for more information)
+- As a developer, you can verify COBOL program output written into a physical sequential data set.
+- As a tester, you can create test data from production VSAM data sets (see [**Limitations**](#limitations) for more information).
 
 ## **Contents**
 
@@ -22,9 +22,9 @@ Data Set Viewer enables you to view data sets, including VSAM data sets, in CSV 
 Before you install Data Set Viewer, ensure that you have:
 
 - Access to Mainframe 
-- [CA File Master Plus](http://www.broadcom.com/fmp) version 10.0 or higher.
+- [CA File Master Plus](http://www.broadcom.com/fmp) version 10.0 or higher
 - [Zowe Explorer](https://marketplace.visualstudio.com/items?itemName=Zowe.vscode-extension-for-zowe) configured with a z/OSMF profile
-- CA File Master Plus VS Code REXX library (see [**Configure CAWAVSMN REXX member**](#configure-CAWAVSMN-REXX-member))
+- CA File Master Plus VS Code REXX library (see [**Configure CAWAVSMN REXX member**](#configure-cawavsmn-rexx-member))
 
 ## **Configure CAWAVSMN REXX member**
 
@@ -64,15 +64,16 @@ Before you start using the extension, check your configuration settings.
 
     You can now use the extension to export data sets using layouts.
 
-
 ## **Using**
 
 ### **Functionality**
 - Apply your existing CA File Master Plus layouts and selection criteria to display records.
-- Export data sets to a comma separated value format (CSV) using a custom record layout.
 - Download records in batches to increase load times and optimize the use of hardware resources.
+- Export data sets to a comma separated value format (CSV) using a custom record layout.
 
 ### **Display Records Using Layouts and Selection Criteria**
+
+![Display records using a layout](https://github.com/BroadcomMFD/data-set-viewer/blob/master/resources/Display%20Records%20Using%20Layouts.gif?raw=true)
 
 You can view records using layouts and selection criteria. Layouts generate a composite view of records that contain multiple pieces. They also allow you to hide unwanted fields and display data from a particular offset in a record. Selection criteria are rules that define which records are displayed based on your preferences, and enable you to further filter the data that you want to view.
 
@@ -94,6 +95,8 @@ You can view records using layouts and selection criteria. Layouts generate a co
 If you have a CSV VS Code extension installed, you can use it to view, sort and filter records in a table format. 
 
 ### **Download Records in Batches**
+
+![Download records in batches](https://github.com/BroadcomMFD/data-set-viewer/blob/master/resources/Download%20Records%20in%20Batches.gif?raw=true)
 
 If you have a data set that contains a large number of records, you can sequentially download the records to load the data faster and use hardware resources more efficiently.
 
@@ -118,6 +121,8 @@ Press **Enter** to confirm.
     Your next batch of records is displayed. 
 
 ### **Display Records Using a Custom Record Layout**
+
+![Display records using a custom record layout](https://raw.githubusercontent.com/BroadcomMFD/data-set-viewer/master/resources/Display%20Records%20Using%20a%20Custom%20Record%20Layout.gif)
 
 If you export a data set using custom record layout, your records are displayed in a separate tab for every ordinary layout applied.  
 
