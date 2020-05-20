@@ -35,14 +35,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 2. Imperative
 
-Imperative was obtained under the Eclipse Public License v.2.0, and is distributed by CA for use
-with this CA product in unmodified, object code form, under the CA license agreement. Any
-provisions in the CA license agreement that differ from the Eclipse Public License are offered by
-CA alone and not by any other party. The third party licensors of this component provide it on
-an AS-IS BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-implied, including, without limitation, any warranties or conditions of TITLE, NONINFRINGEMENT, 
-MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE, and disclaim
-liability for any claim or loss, including, without limitation, direct, indirect, special, punitive,
-exemplary or consequential damages. CA makes the source code for Imperative, as well as any
-CA modifications to Imperative, available at http://opensrcd.broadcom.com under the terms of
-the Eclipse Public License v.2.0.
+Imperative was obtained under the Eclipse Public License v.2.0, and is distributed by Broadcom for use
+with this Broadcom product in unmodified, object code form, under the Broadcom license agreement.
+Any provisions in the Broadcom license agreement that differ from the Eclipse Public License are
+offered by Broadcom alone and not by any other party. The third party licensors of this component
+provide it on an AS-IS BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+implied, including, without limitation, any warranties or conditions of
+TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE,
+and disclaim liability for any claim or loss, including, without limitation, direct, indirect, special, punitive,
+exemplary or consequential damages. Broadcom makes the source code for Imperative, as well as any
+Broadcom modifications to Imperative, available at http://opensrcd.broadcom.com/ips/00001725_3/
+under the terms of the Eclipse Public License v.2.0.
