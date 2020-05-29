@@ -148,7 +148,7 @@ For information about how to create layouts and selection criteria for your reco
 - [Filters](https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-mainframe-software/devops/ca-filemaster-plus/11-0/using-ispf/ispf-user-interface-for-ca-file-master-plus/filters.html)
 
 ## **Limitations** 
-- In order to create test data, you need to have the CA File Master Plus Plug-in for Zowe CLI to populate your data back to the mainframe. For information about the plug-in, see [CA File Master Plus Plug-in for Zowe CLI](http://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-mainframe-software/devops/ca-brightside-enterprise/2-0/ca-brightside-command-line-interface-cli/available-cli-plug-ins/ca-brightside-plug-in-for-ca-file-master-plus.html)
+- In order to create test data, you need to have the CA File Master Plus Plug-in for Zowe CLI to populate your data back to the mainframe. For information about the plug-in, see [CA File Master Plus Plug-in for Zowe CLI](http://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-mainframe-software/devops/ca-brightside/3-0/ca-brightside-command-line-interface-cli/available-cli-plug-ins/ca-brightside-plug-in-for-ca-file-master-plus.html).
 - Currently you can only export data sets. At this time, importing changes you have made locally is not supported. 
 
 ## **Report a Problem**
