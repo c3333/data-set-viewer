@@ -68,7 +68,7 @@ Before you start using the extension, check your configuration settings.
 
 ### **Functionality**
 - Apply your existing CA File Master Plus layouts and selection criteria to display records.
-- Download records in batches to increase load times and optimize the use of hardware resources.
+- Download records in batches to decrease load times and optimize the use of hardware resources.
 - Export data sets to a comma separated value format (CSV) using a custom record layout.
 
 ### **Display Records Using Layouts and Selection Criteria**
